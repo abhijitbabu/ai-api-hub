@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/">{{ app_name }}</a>
+    <nav>
+      <a href="/">Dashboard</a>
+      <a href="/connectors/new">New API</a>
+      <a href="/docs">API Docs</a>
+    </nav>
+  </header>
+  <main class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="foot">
+    Universal AI API Connector — generated endpoints, usage logs, and live docs.
+  </footer>
+  {% block scripts %}{% endblock %}
+  <script src="/static/app.js"></script>
+</body>
+</html>

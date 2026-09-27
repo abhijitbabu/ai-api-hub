@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Test {{ connector.name }} · {{ app_name }}{% endblock %}
+{% block content %}
+<p class="eyebrow">Playground</p>
+<h1>Test {{ connector.name }}</h1>
+<p class="lede">Fields are generated from this connector’s input definition. The request is logged like any external call.</p>
+
+<form method="post" enctype="multipart/form-data" class="stack">
+  {% for p in params %}
+    <label>{{ p.name }} {% if p.required %}*{% endif %}
+      <span class="muted">{{ p.type }}{% if p.description %} — {{ p.description }}{% endif %}</span>
+      {% if p.type == "image" or p.type == "file" %}
+        <input type="file" name="{{ p.name }}" {% if p.required %}required{% endif %} {% if p.type == "image" %}accept="image/*"{% endif %} />
+      {% elif p.type == "boolean" %}
+        <select name="{{ p.name }}">
+          <option value="true">true</option>
+          <option value="false">false</option>
+        </select>
+      {% elif p.type == "number" %}
+        <input type="number" step="any" name="{{ p.name }}" {% if p.required %}required{% endif %} value="{{ p.default if p.default is defined and p.default is not none else '' }}" />
+      {% elif p.type == "json" %}
+        <textarea name="{{ p.name }}" rows="5">{% if p.default is defined %}{{ p.default | tojson }}{% endif %}</textarea>
+      {% else %}
+        <input type="text" name="{{ p.name }}" {% if p.required %}required{% endif %} value="{{ p.default if p.default is defined and p.default is not none else '' }}" />
+      {% endif %}
+    </label>
+  {% endfor %}
+  <button class="btn primary" type="submit">Send test request</button>
+</form>
+
+{% if result %}
+<section class="result {% if result.success %}ok{% else %}bad{% endif %}">
+  <h2>{% if result.success %}Success{% else %}Error{% endif %}</h2>
+  <p class="muted">
+    {{ result.meta.response_time_ms }} ms
+    {% if result.meta.total_tokens %} · {{ result.meta.total_tokens }} tokens{% endif %}
+    {% if result.meta.estimated_cost %} · est. ${{ "%.6f"|format(result.meta.estimated_cost) }}{% endif %}
+  </p>
+  {% if result.error %}
+  <p><strong>{{ result.error.type }}:</strong> {{ result.error.message }}</p>
+  {% endif %}
+  <pre>{{ result | tojson(indent=2) }}</pre>
+</section>
+{% endif %}
+{% endblock %}

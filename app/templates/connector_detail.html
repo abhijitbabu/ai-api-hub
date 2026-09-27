@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ connector.name }} · {{ app_name }}{% endblock %}
+{% block content %}
+<p class="eyebrow">{{ connector.provider }} · {{ connector.model }}</p>
+<div class="split">
+  <h1>{{ connector.name }}</h1>
+  <div class="row-actions">
+    {% if connector.is_active %}<span class="pill ok">Active</span>{% else %}<span class="pill off">Disabled</span>{% endif %}
+    <a class="btn" href="/connectors/{{ connector.id }}/edit">Edit</a>
+    <a class="btn" href="/connectors/{{ connector.id }}/test">Test API</a>
+    <a class="btn" href="/connectors/{{ connector.id }}/docs">Docs</a>
+    <a class="btn" href="/connectors/{{ connector.id }}/stats">Stats</a>
+  </div>
+</div>
+<p class="lede">{{ connector.description }}</p>
+
+<div class="cards">
+  <article>
+    <h3>Endpoint</h3>
+    <p class="mono">POST {{ base_url }}/api/{{ connector.slug }}</p>
+  </article>
+  <article>
+    <h3>Access key</h3>
+    <p class="mono wrap-all">{{ connector.api_key }}</p>
+    <form method="post" action="/connectors/{{ connector.id }}/rotate-key">
+      <button class="btn" type="submit">Rotate key</button>
+    </form>
+  </article>
+  <article>
+    <h3>Usage</h3>
+    <p>{{ stats.total_requests }} total · {{ stats.successful_requests }} ok · {{ stats.failed_requests }} failed</p>
+    <p class="muted">Last used: {% if stats.last_used %}{{ stats.last_used.strftime("%Y-%m-%d %H:%M") }} UTC{% else %}never{% endif %}</p>
+  </article>
+</div>
+
+<h2>Inputs</h2>
+<ul>
+  {% for p in params %}
+  <li><code>{{ p.name }}</code> — {{ p.type }} {% if p.required %}(required){% else %}(optional){% endif %}{% if p.description %} · {{ p.description }}{% endif %}</li>
+  {% endfor %}
+</ul>
+
+<h2>Output schema</h2>
+<pre>{{ schema | tojson(indent=2) }}</pre>
+
+<div class="row-actions danger-row">
+  <form method="post" action="/connectors/{{ connector.id }}/toggle">
+    <button class="btn" type="submit">{% if connector.is_active %}Disable{% else %}Enable{% endif %}</button>
+  </form>
+  <form method="post" action="/connectors/{{ connector.id }}/delete" onsubmit="return confirm('Delete this connector and its logs?')">
+    <button class="btn danger" type="submit">Delete</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Stats · {{ connector.name }}{% endblock %}
+{% block content %}
+<h1>Usage · {{ connector.name }}</h1>
+<div class="cards">
+  <article><h3>Total</h3><p class="stat">{{ stats.total_requests }}</p></article>
+  <article><h3>Successful</h3><p class="stat">{{ stats.successful_requests }}</p></article>
+  <article><h3>Failed</h3><p class="stat">{{ stats.failed_requests }}</p></article>
+  <article><h3>Avg time</h3><p class="stat">{% if stats.avg_response_ms %}{{ stats.avg_response_ms }} ms{% else %}—{% endif %}</p></article>
+  <article><h3>Tokens</h3><p class="stat">{{ stats.total_tokens }}</p></article>
+  <article><h3>Est. cost</h3><p class="stat">${{ "%.4f"|format(stats.estimated_cost) }}</p></article>
+</div>
+<p class="muted">First used: {% if stats.first_used %}{{ stats.first_used.strftime("%Y-%m-%d %H:%M") }} UTC{% else %}never{% endif %}
+ · Last used: {% if stats.last_used %}{{ stats.last_used.strftime("%Y-%m-%d %H:%M") }} UTC{% else %}never{% endif %}</p>
+
+<div class="table-wrap">
+<table class="grid">
+  <thead>
+    <tr>
+      <th>Time</th><th>OK</th><th>ms</th><th>Provider</th><th>Model</th>
+      <th>In</th><th>Out</th><th>Total</th><th>Cost</th><th>Error</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for log in recent %}
+    <tr>
+      <td>{{ log.created_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+      <td>{% if log.success %}yes{% else %}no{% endif %}</td>
+      <td>{{ log.response_time_ms }}</td>
+      <td>{{ log.provider }}</td>
+      <td class="mono">{{ log.model }}</td>
+      <td>{{ log.input_tokens if log.input_tokens is not none else "—" }}</td>
+      <td>{{ log.output_tokens if log.output_tokens is not none else "—" }}</td>
+      <td>{{ log.total_tokens if log.total_tokens is not none else "—" }}</td>
+      <td>{% if log.estimated_cost is not none %}{{ "%.6f"|format(log.estimated_cost) }}{% else %}—{% endif %}</td>
+      <td>{% if log.error_type %}{{ log.error_type }}: {{ log.error_message }}{% else %}—{% endif %}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="10">No requests yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

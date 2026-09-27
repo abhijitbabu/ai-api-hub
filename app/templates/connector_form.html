@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if connector else "New" }} connector · {{ app_name }}{% endblock %}
+{% block content %}
+<h1>{{ "Edit connector" if connector else "Create connector" }}</h1>
+<p class="lede">Name the API, pick a provider/model, write instructions, then define inputs and the JSON you want back.</p>
+
+<form method="post" action="{{ '/connectors/' ~ connector.id if connector else '/connectors' }}" id="connector-form" class="stack">
+  <label>API name
+    <input name="name" required value="{{ connector.name if connector else '' }}" placeholder="Card Scanner" />
+  </label>
+  <label>Description / purpose
+    <textarea name="description" rows="3" placeholder="What this API does">{{ connector.description if connector else '' }}</textarea>
+  </label>
+  <div class="two">
+    <label>AI provider
+      <select name="provider" id="provider">
+        {% for p in providers %}
+        <option value="{{ p.id }}" {% if connector and connector.provider == p.id %}selected{% endif %}>
+          {{ p.label }}{% if not p.configured %} (key missing){% endif %}
+        </option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>AI model
+      <input name="model" id="model" list="model-list" required value="{{ connector.model if connector else '' }}" placeholder="gemini-3.5-flash-lite" />
+      <datalist id="model-list"></datalist>
+    </label>
+  </div>
+  <p class="row-actions">
+    <button type="button" class="btn" id="refresh-models">Refresh models</button>
+    <span class="muted" id="model-status"></span>
+  </p>
+  <label>System instructions / prompt
+    <textarea name="system_prompt" rows="8" required placeholder='Extract details from "{card_text}"...'>{{ connector.system_prompt if connector else '' }}</textarea>
+  </label>
+
+  <h2>Input parameters</h2>
+  <div id="params" class="stack mb-3"></div>
+  <button type="button" class="btn" id="add-param">Add field</button>
+  <input type="hidden" name="input_params" id="input_params" />
+
+  <h2>Output schema</h2>
+  <p class="muted">JSON object mapping field names to types such as <code>string</code>, <code>number</code>, <code>boolean</code>, <code>array</code>, or <code>object</code>.</p>
+  <textarea name="output_schema" id="output_schema" rows="10" required>{{ default_schema }}</textarea>
+
+  <label class="check">
+    <input type="checkbox" name="is_active" {% if not connector or connector.is_active %}checked{% endif %} /> Active
+  </label>
+  <button class="btn primary" type="submit">Save connector</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.HUB_FORM = {
+    MODELS: {{ (models_by_provider or {}) | tojson }},
+    INITIAL_PARAMS: {{ (default_params or []) | tojson }},
+    FIELD_TYPES: {{ (field_types or ["text", "number", "boolean", "image", "file", "json"]) | tojson }}
+  };
+</script>
+{% endblock %}

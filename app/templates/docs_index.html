@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}API documentation · {{ app_name }}{% endblock %}
+{% block content %}
+<h1>API documentation</h1>
+<p class="lede">Every connector publishes its own endpoint docs. Evaluators and other developers can call these APIs without opening the source.</p>
+<ul class="doc-list">
+  {% for c in connectors %}
+  <li>
+    <a href="/docs/{{ c.slug }}">{{ c.name }}</a>
+    <span class="muted">POST /api/{{ c.slug }} · {{ c.provider }} / {{ c.model }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

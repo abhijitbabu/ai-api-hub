@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Docs · {{ connector.name }}{% endblock %}
+{% block content %}
+<p class="eyebrow">Generated documentation</p>
+<h1>{{ connector.name }}</h1>
+<p class="lede">{{ connector.description }}</p>
+
+<h2>Endpoint</h2>
+<p class="mono">POST {{ base_url }}/api/{{ connector.slug }}</p>
+<p>Status: {% if connector.is_active %}Active{% else %}Disabled{% endif %} · Provider: {{ connector.provider }} · Model: {{ connector.model }}</p>
+
+<h2>Authentication</h2>
+<p>Send the connector API key in the <code>X-API-Key</code> header (or <code>Authorization: Bearer</code>).</p>
+<p>The key is shown on the connector page in the hub. Provider keys never leave the server.</p>
+
+<h2>Request format</h2>
+{% if has_files %}
+<p>Use <code>multipart/form-data</code>. File fields are uploaded as form files; other fields are text parts.</p>
+{% else %}
+<p>Send <code>application/json</code> with a JSON object, or <code>multipart/form-data</code>.</p>
+{% endif %}
+
+<h2>Parameters</h2>
+<table class="grid">
+  <thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+  <tbody>
+    {% for p in params %}
+    <tr>
+      <td class="mono">{{ p.name }}</td>
+      <td>{{ p.type }}</td>
+      <td>{% if p.required %}yes{% else %}no{% endif %}</td>
+      <td>{{ p.description or "—" }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Example request</h2>
+<pre>{
+{% for p in params if p.type not in ["image", "file"] %}  "{{ p.name }}": {% if p.type == "number" %}1200{% elif p.type == "boolean" %}true{% elif p.type == "json" %}{"tone":"professional"}{% else %}"example"{% endif %}{% if not loop.last %},{% endif %}
+
+{% endfor %}}</pre>
+
+<h2>Expected success response</h2>
+<pre>{
+  "success": true,
+  "data": {{ schema | tojson(indent=4) }},
+  "error": null,
+  "meta": {
+    "response_time_ms": 842,
+    "provider": "{{ connector.provider }}",
+    "model": "{{ connector.model }}"
+  }
+}</pre>
+
+<h2>Error response</h2>
+<pre>{
+  "success": false,
+  "data": {},
+  "error": {
+    "type": "validation_error",
+    "message": "Missing required field 'topic'"
+  }
+}</pre>
+<p>Other error types: <code>unauthorized</code>, <code>disabled</code>, <code>timeout</code>, <code>provider_error</code>, <code>provider_not_configured</code>, <code>internal_error</code>.</p>
+
+<h2>Example cURL</h2>
+{% if has_files %}
+<pre>curl -X POST "{{ base_url }}/api/{{ connector.slug }}" \
+  -H "X-API-Key: YOUR_CONNECTOR_KEY" \
+  -F "image=@card.jpg"</pre>
+{% else %}
+<pre>curl -X POST "{{ base_url }}/api/{{ connector.slug }}" \
+  -H "X-API-Key: YOUR_CONNECTOR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"topic":"Digital marketing","word_count":600}'</pre>
+{% endif %}
+
+<p><a class="btn" href="/connectors/{{ connector.id }}/test">Open test console</a></p>
+{% endblock %}

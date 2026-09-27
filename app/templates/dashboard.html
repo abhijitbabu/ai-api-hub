@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · {{ app_name }}{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <p class="eyebrow">API Hub</p>
+    <h1>Reusable AI APIs from one console.</h1>
+    <p class="lede">Create a connector, define inputs and a JSON schema, and the hub exposes a real POST endpoint with docs, testing, and usage stats.</p>
+  </div>
+  <a class="btn primary" href="/connectors/new">Create connector</a>
+</section>
+
+<div class="table-wrap">
+  <table class="grid">
+    <thead>
+      <tr>
+        <th>API</th>
+        <th>Provider</th>
+        <th>Model</th>
+        <th>Input</th>
+        <th>Status</th>
+        <th>Requests</th>
+        <th>Last used</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td><a href="/connectors/{{ row.connector.id }}">{{ row.connector.name }}</a><div class="muted">/api/{{ row.connector.slug }}</div></td>
+        <td>{{ row.connector.provider }}</td>
+        <td class="mono">{{ row.connector.model }}</td>
+        <td>{{ row.input_summary }}</td>
+        <td>{% if row.connector.is_active %}<span class="pill ok">Active</span>{% else %}<span class="pill off">Disabled</span>{% endif %}</td>
+        <td>{{ row.requests }}</td>
+        <td>{% if row.last_used %}{{ row.last_used.strftime("%Y-%m-%d %H:%M") }} UTC{% else %}Never{% endif %}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7">No connectors yet. Create one to generate your first endpoint.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

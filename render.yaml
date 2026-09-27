@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: ai-api-hub
+    env: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: APP_BASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true   # Render automatically generates a secure key
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ai-api-hub-db
+          property: connectionString
+
+databases:
+  - name: ai-api-hub-db
+    plan: free

@@ -1,0 +1,6 @@
+# Extends the base requirements with a Postgres driver.
+# Used only for server deploys (see Dockerfile) — not needed for local
+# development, which defaults to SQLite. Keeping this separate means Windows
+# users never have to build psycopg2 from source locally.
+-r requirements.txt
+psycopg2-binary==2.9.10
